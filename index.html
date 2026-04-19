@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Apartment Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-bg-effects">
+            <div class="login-orb orb-1"></div>
+            <div class="login-orb orb-2"></div>
+            <div class="login-orb orb-3"></div>
+        </div>
+        <div class="login-container glass-effect">
+            <div class="login-logo">
+                <i class="fa-solid fa-building-user"></i>
+            </div>
+            <h1 class="login-title">SmartAPT</h1>
+            <p class="login-subtitle">Hệ thống quản lý căn hộ thông minh</p>
+            
+            <!-- Form Email/Password -->
+            <form id="login-form" class="login-form" onsubmit="signInWithEmail(event)">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" id="login-email" placeholder="Nhập email" required autocomplete="email">
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="login-password" placeholder="Nhập mật khẩu" required autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                        <i class="fa-solid fa-eye" id="eye-icon"></i>
+                    </button>
+                </div>
+                <button type="submit" id="btn-email-login" class="btn-email-login">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Đăng Nhập</span>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="login-divider">
+                <span>hoặc</span>
+            </div>
+
+            <!-- Google Sign-In -->
+            <button id="btn-google-login" class="btn-google" onclick="signInWithGoogle()">
+                <svg class="google-icon" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Đăng nhập bằng Google</span>
+            </button>
+
+            <div id="login-error" class="login-error hidden"></div>
+            <p class="login-footer">Được bảo mật bởi Firebase Authentication</p>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-effect">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-building-user logo-icon"></i>
+                <h2>SmartAPT</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+                <li data-tab="lights"><i class="fa-solid fa-lightbulb"></i> Chiếu sáng</li>
+                <li data-tab="environment"><i class="fa-solid fa-temperature-half"></i> Môi trường</li>
+                <li data-tab="gps"><i class="fa-solid fa-location-dot"></i> GPS & SIM</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar glass-effect">
+                <div class="header-title">
+                    <h1 id="page-title">Tổng Quan Dashboard</h1>
+                    <p>Hệ thống quản lý thông minh qua ESP32</p>
+                </div>
+                <div class="user-profile">
+                    <div class="mode-selector">
+                        <span>Chế độ: </span>
+                        <label class="toggle-switch-mode">
+                            <input type="checkbox" id="mode-toggle" onchange="toggleSystemMode()">
+                            <span class="slider-mode round"></span>
+                        </label>
+                        <span id="mode-label" class="mode-label manual">Thủ Công</span>
+                    </div>
+                    <div class="user-info" id="user-info">
+                        <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                        <span id="user-name" class="user-name"></span>
+                        <button class="btn-logout" onclick="signOutUser()" title="Đăng xuất">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TABS CONTAINER -->
+            <!-- 1. DASHBOARD VIEW -->
+            <div id="view-dashboard" class="tab-view active dashboard-grid">
+                <!-- Environment Sensors -->
+                <div class="card glass-effect sensor-card temp-card">
+                    <div class="card-icon"><i class="fa-solid fa-temperature-three-quarters"></i></div>
+                    <div class="card-info">
+                        <h3>Nhiệt Độ</h3>
+                        <div class="value"><span id="temp-val">--</span> <span class="unit">°C</span></div>
+                    </div>
+                </div>
+
+                <div class="card glass-effect sensor-card light-card">
+                    <div class="card-icon"><i class="fa-regular fa-sun"></i></div>
+                    <div class="card-info">
+                        <h3>Cường Độ Sáng</h3>
+                        <div class="value"><span id="light-val">--</span> <span class="unit">Lux</span></div>
+                    </div>
+                </div>
+
+                <!-- GPS and SIM Info -->
+                <div class="card glass-effect gps-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-satellite-dish"></i> GPS & Kết Nối</h3>
+                    </div>
+                    <div class="gps-data">
+                        <div class="data-row">
+                            <span>Vĩ độ (Lat):</span>
+                            <strong id="gps-lat">--.------</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Kinh độ (Lng):</span>
+                            <strong id="gps-lng">--.------</strong>
+                        </div>
+                        <div class="data-row sim-status">
+                            <span>Module SIM:</span>
+                            <span class="badge" id="sim-status">Chờ kết nối...</span>
+                        </div>
+                    </div>
+                </div>
+
+                </div> <!-- End Dashboard View -->
+
+                <!-- 2. LIGHTS VIEW -->
+                <div id="view-lights" class="tab-view dashboard-grid">
+                    <div class="card glass-effect lights-wrapper col-span-2">
+                        <div class="card-header">
+                            <h3><i class="fa-regular fa-lightbulb"></i> Màn Điều Khiển Chiếu Sáng Chi Tiết</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px;">Khi bật 'Chế độ Tự Động', đèn sẽ tự động điều chỉnh dựa trên cảm biến ánh sáng.</p>
+                        </div>
+                        <div class="lights-grid">
+                        <!-- Light Room 1 -->
+                        <div class="light-control" id="room-living">
+                            <div class="room-icon"><i class="fa-solid fa-couch"></i></div>
+                            <h4>Phòng Khách</h4>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-living" onchange="toggleLight('living')">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <!-- Light Room 2 -->
+                        <div class="light-control" id="room-bed1">
+                            <div class="room-icon"><i class="fa-solid fa-bed"></i></div>
+                            <h4>Phòng Ngủ</h4>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-bed1" onchange="toggleLight('bed1')">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <!-- Light Kitchen -->
+                        <div class="light-control" id="room-kitchen">
+                            <div class="room-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+                            <h4>Nhà Bếp</h4>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-kitchen" onchange="toggleLight('kitchen')">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <!-- Light Bath -->
+                        <div class="light-control" id="room-bath">
+                            <div class="room-icon"><i class="fa-solid fa-bath"></i></div>
+                            <h4>Vệ Sinh</h4>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-bath" onchange="toggleLight('bath')">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                </div> <!-- End Lights View -->
+
+                <!-- 3. ENVIRONMENT VIEW -->
+                <div id="view-environment" class="tab-view dashboard-grid">
+                    <div class="card glass-effect sensor-card temp-card">
+                        <div class="card-icon"><i class="fa-solid fa-temperature-three-quarters"></i></div>
+                        <div class="card-info">
+                            <h3>Nhiệt Độ Hiện Tại</h3>
+                            <div class="value"><span id="temp-val-env">--</span> <span class="unit">°C</span></div>
+                        </div>
+                    </div>
+                    <div class="card glass-effect sensor-card light-card">
+                        <div class="card-icon"><i class="fa-regular fa-sun"></i></div>
+                        <div class="card-info">
+                            <h3>Cường Độ Ánh Sáng Môi Trường</h3>
+                            <div class="value"><span id="light-val-env">--</span> <span class="unit">Lux</span></div>
+                        </div>
+                    </div>
+                </div> <!-- End Environment View -->
+
+                <!-- 4. GPS & SIM VIEW -->
+                <div id="view-gps" class="tab-view dashboard-grid">
+                    <div class="card glass-effect gps-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-satellite-dish"></i> Thông tin Trạm định vị & Viễn thông</h3>
+                        </div>
+                        <div class="gps-data">
+                            <div class="data-row">
+                                <span>Vĩ độ chính xác (Lat):</span>
+                                <strong id="gps-lat-detail">--.------</strong>
+                            </div>
+                            <div class="data-row">
+                                <span>Kinh độ chính xác (Lng):</span>
+                                <strong id="gps-lng-detail">--.------</strong>
+                            </div>
+                            <div class="data-row sim-status">
+                                <span>Trạng thái kết nối SIM800A:</span>
+                                <span class="badge" id="sim-status-detail">Đang lấy dữ liệu...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- End GPS View -->
+
+            <!-- END TABS CONTAINER -->
+        </main>
+    </div>
+
+    <!-- Fire Alarm Modal Backdrop -->
+    <div id="fire-alarm-modal" class="alarm-modal hidden">
+        <div class="alarm-content glass-effect">
+            <i class="fa-solid fa-triangle-exclamation alarm-icon"></i>
+            <h2>CẢNH BÁO CHÁY!</h2>
+            <p>Hệ thống phát hiện nguy cơ cháy tại căn hộ. Vui lòng di tản ngay lập tức!</p>
+            <button class="btn btn-danger" onclick="acknowledgeAlarm()">Xác Nhận (Tạm Tắt Còi)</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Version 8 compat for simpler init without bundler) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
